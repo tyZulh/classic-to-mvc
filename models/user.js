@@ -2,7 +2,7 @@ const mysql = require("../db");
 const argon2 = require("argon2")
 
 const findAll = async () => {
-  const result = await mysql.query("SELECT id, email FROM user");
+  const result = await mysql.query("SELECT * FROM user");
   return result[0];
 };
 
@@ -13,7 +13,11 @@ const findOne = async (id) => {
 
 const findOneByEmail = async (email) => {
   const result = await mysql.query("SELECT * FROM user WHERE email = ?", email);
-  return result[0];
+  if(result[0].length){
+    return result[0];
+  } else {
+    throw new Error
+  }
 };
 
 const create = async (body) => {
@@ -64,9 +68,8 @@ const hashPassword = async (password) => {
 const verifyPassword = async (email, password) => {
   const user = await findOneByEmail(email)
   try {
-    console.log(user, password);
     if (await argon2.verify(user[0].password, password)) {
-      return true
+      return user[0].id
     } else {
       return false
     }
